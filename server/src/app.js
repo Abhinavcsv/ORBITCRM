@@ -3,10 +3,14 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import testRoutes from "./routes/testRoutes.js";
 
 import sessionMiddleware from "./config/session.js";
+
 import authRoutes from "./routes/authRoutes.js";
+import employeeRoutes from "./routes/employeeRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
 
 const app = express();
 
@@ -19,14 +23,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use("/api/test", testRoutes);
+
+// ✅ Session BEFORE routes
 app.use(sessionMiddleware);
 
 app.use(helmet());
 app.use(morgan("dev"));
 
-// Routes
+// ✅ Routes AFTER session
 app.use("/api/auth", authRoutes);
+app.use("/api/employees", employeeRoutes);
+app.use("/api/test", testRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/leads", leadRoutes);
 
 app.get("/", (req, res) => {
   res.json({

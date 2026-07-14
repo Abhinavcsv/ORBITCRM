@@ -9,7 +9,7 @@ import {
   resetPassword
 } from "../controllers/authController.js";
 
-import isAuthenticated from "../middleware/authMiddleware.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
