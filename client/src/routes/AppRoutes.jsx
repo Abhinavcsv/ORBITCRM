@@ -1,31 +1,144 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
+import AuthLayout from "../layouts/AuthLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
 import Dashboard from "../pages/dashboard/Dashboard";
-import Customers from "../pages/customers/Customers";
+import NotFound from "../pages/NotFound";
+import Employees from "../pages/employees/Employees";
+import VerifyOTP from "../pages/auth/VerifyOTP";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import Leads from "../pages/leads/Leads";
+import MyLeads from "../pages/leads/MyLeads";
 import Tasks from "../pages/tasks/Tasks";
-import Meetings from "../pages/meetings/Meetings";
-import Reports from "../pages/reports/Reports";
-import AIAssistant from "../pages/ai/AIAssistant";
-import Settings from "../pages/settings/Settings";
+import MyTasks from "../pages/tasks/MyTasks";
+import Customers from "../pages/customers/Customers";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <AuthLayout>
+              <Login />
+            </AuthLayout>
+          }
+        />
+        <Route
+  path="/forgot-password"
+  element={
+    <AuthLayout>
+      <ForgotPassword />
+    </AuthLayout>
+  }
+/>
+<Route
+  path="/verify-otp"
+  element={
+    <AuthLayout>
+      <VerifyOTP />
+    </AuthLayout>
+  }
+/>
+<Route
+  path="/reset-password"
+  element={
+    <AuthLayout>
+      <ResetPassword />
+    </AuthLayout>
+  }
+/>
+
+
+        <Route
+          path="/register"
+          element={
+            <AuthLayout>
+              <Register />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+  path="/employees"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
       <MainLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/meetings" element={<Meetings />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/ai" element={<AIAssistant />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <Employees />
       </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/leads"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Leads />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/tasks"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Tasks />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/my-leads"
+  element={
+    <ProtectedRoute allowedRoles={["employee"]}>
+      <MainLayout>
+        <MyLeads />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/my-tasks"
+  element={
+    <ProtectedRoute allowedRoles={["employee"]}>
+      <MainLayout>
+        <MyTasks />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/customers"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Customers />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </BrowserRouter>
   );
 }

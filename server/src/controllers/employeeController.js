@@ -1,4 +1,8 @@
 import Employee from "../models/Employee.js";
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
+
+// ================= CREATE EMPLOYEE =================
 
 export const createEmployee = async (req, res) => {
   try {
@@ -12,7 +16,6 @@ export const createEmployee = async (req, res) => {
       address,
     } = req.body;
 
-    // Validation
     if (
       !name ||
       !email ||
@@ -27,7 +30,6 @@ export const createEmployee = async (req, res) => {
       });
     }
 
-    // Check duplicate email
     const existingEmployee = await Employee.findOne({ email });
 
     if (existingEmployee) {
@@ -37,7 +39,6 @@ export const createEmployee = async (req, res) => {
       });
     }
 
-    // Create Employee
     const employee = await Employee.create({
       name,
       email,
@@ -48,6 +49,30 @@ export const createEmployee = async (req, res) => {
       address,
       createdBy: req.session.user.id,
     });
+    // Create login account for employee
+
+const existingUser = await User.findOne({ email });
+
+if (existingUser) {
+  return res.status(400).json({
+    success: false,
+    message: "User already exists",
+  });
+}
+
+const hashedPassword = await bcrypt.hash("Welcome@123", 10);
+
+const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  role: "employee",
+});
+
+// Link Employee with User Login
+employee.userId = user._id;
+
+await employee.save();
 
     return res.status(201).json({
       success: true,
@@ -64,9 +89,41 @@ export const createEmployee = async (req, res) => {
     });
   }
 };
+
+// ================= GET ALL EMPLOYEES =================
+
+export const getAllEmployees = async (req, res) => {
+  try {
+
+    const employees = await Employee.find({
+      createdBy: req.session.user.id,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: employees.length,
+      employees,
+    });
+
+  } catch (error) {
+    console.error("GET EMPLOYEES ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ================= GET SINGLE EMPLOYEE =================
+
 export const getEmployeeById = async (req, res) => {
   try {
-    const employee = await Employee.findById(req.params.id);
+
+    const employee = await Employee.findOne({
+      _id: req.params.id,
+      createdBy: req.session.user.id,
+    });
 
     if (!employee) {
       return res.status(404).json({
@@ -89,16 +146,30 @@ export const getEmployeeById = async (req, res) => {
     });
   }
 };
+
+// ================= UPDATE EMPLOYEE =================
+
 export const updateEmployee = async (req, res) => {
   try {
-    const employee = await Employee.findByIdAndUpdate(
-      req.params.id,
+
+    console.log("========== UPDATE ==========");
+    console.log("ID:", req.params.id);
+    console.log("BODY:", req.body);
+    console.log("SESSION USER:", req.session.user);
+
+    const employee = await Employee.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        createdBy: req.session.user.id,
+      },
       req.body,
       {
         new: true,
         runValidators: true,
       }
     );
+
+    console.log("UPDATED EMPLOYEE:", employee);
 
     if (!employee) {
       return res.status(404).json({
@@ -114,7 +185,7 @@ export const updateEmployee = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("UPDATE EMPLOYEE ERROR:", error);
+    console.error(error);
 
     return res.status(500).json({
       success: false,
@@ -122,44 +193,35 @@ export const updateEmployee = async (req, res) => {
     });
   }
 };
+// ================= DELETE EMPLOYEE =================
+
 export const deleteEmployee = async (req, res) => {
   try {
-    const employee = await Employee.findByIdAndDelete(req.params.id);
 
-    if (!employee) {
-      return res.status(404).json({
-        success: false,
-        message: "Employee not found",
-      });
-    }
+    const employee = await Employee.findOneAndDelete({
+  _id: req.params.id,
+  createdBy: req.session.user.id,
+});
 
-    return res.status(200).json({
-      success: true,
-      message: "Employee Deleted Successfully",
-    });
+if (!employee) {
+  return res.status(404).json({
+    success: false,
+    message: "Employee not found",
+  });
+}
+
+// Delete login account also
+await User.findOneAndDelete({
+  email: employee.email,
+});
+
+return res.status(200).json({
+  success: true,
+  message: "Employee Deleted Successfully",
+});
 
   } catch (error) {
     console.error("DELETE EMPLOYEE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-export const getAllEmployees = async (req, res) => {
-  try {
-    const employees = await Employee.find()
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json({
-      success: true,
-      count: employees.length,
-      employees,
-    });
-
-  } catch (error) {
-    console.error("GET EMPLOYEES ERROR:", error);
 
     return res.status(500).json({
       success: false,

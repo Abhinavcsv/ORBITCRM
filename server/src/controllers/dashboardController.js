@@ -1,9 +1,32 @@
 import Employee from "../models/Employee.js";
 import Lead from "../models/Lead.js";
-
+import mongoose from "mongoose";
 export const getDashboardStats = async (req, res) => {
   try {
     const createdBy = req.session.user.id;
+
+    console.log("Session User:", req.session.user);
+    console.log("Created By:", createdBy);
+
+    const allEmployees = await Employee.find({});
+    console.log("All Employees:", allEmployees);
+
+console.log("Session User:", req.session.user);
+console.log("CreatedBy:", createdBy);
+
+const allLeads = await Lead.find({});
+console.log("All Leads:", allLeads);
+
+const userLeads = await Lead.find({ createdBy });
+console.log("User Leads:", userLeads);
+
+const totalLeads = await Lead.countDocuments({ createdBy });
+console.log("Total Leads:", totalLeads);
+
+    console.log(
+  "Employee Count:",
+  await Employee.countDocuments({})
+);
 
     const totalEmployees = await Employee.countDocuments({
       createdBy,
@@ -19,9 +42,6 @@ export const getDashboardStats = async (req, res) => {
       status: "Inactive",
     });
 
-    const totalLeads = await Lead.countDocuments({
-      createdBy,
-    });
 
     const newLeads = await Lead.countDocuments({
       createdBy,
@@ -52,6 +72,40 @@ export const getDashboardStats = async (req, res) => {
       createdBy,
       status: "Won",
     });
+    const monthlyEmployees = await Employee.aggregate([
+  {
+    $match: {
+      createdBy: new mongoose.Types.ObjectId(req.session.user.id),
+    },
+  },
+  {
+    $group: {
+      _id: { $month: "$createdAt" },
+      employees: { $sum: 1 },
+    },
+  },
+  {
+    $sort: {
+      _id: 1,
+    },
+  },
+]);
+
+const months = [
+  "Jan","Feb","Mar","Apr","May","Jun",
+  "Jul","Aug","Sep","Oct","Nov","Dec"
+];
+
+const employeeGrowth = months.map((month, index) => {
+  const found = monthlyEmployees.find(
+    item => item._id === index + 1
+  );
+
+  return {
+    month,
+    employees: found ? found.employees : 0,
+  };
+});
 
     const lost = await Lead.countDocuments({
       createdBy,
@@ -61,18 +115,19 @@ export const getDashboardStats = async (req, res) => {
     return res.status(200).json({
       success: true,
       stats: {
-        totalEmployees,
-        activeEmployees,
-        inactiveEmployees,
-        totalLeads,
-        newLeads,
-        contacted,
-        qualified,
-        proposalSent,
-        negotiation,
-        won,
-        lost,
-      },
+  totalEmployees,
+  activeEmployees,
+  inactiveEmployees,
+  totalLeads,
+  newLeads,
+  contacted,
+  qualified,
+  proposalSent,
+  negotiation,
+  won,
+  lost,
+  employeeGrowth,
+},
     });
 
   } catch (error) {

@@ -6,7 +6,12 @@ import sendEmail from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+  name,
+  email,
+  password,
+  role,
+} = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -31,10 +36,11 @@ export const register = async (req, res) => {
 
     // Create User
     const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+  name,
+  email,
+  password: hashedPassword,
+  role: role || "employee",
+});
 
     res.status(201).json({
       success: true,
@@ -85,7 +91,12 @@ export const getCurrentUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      user,
+      user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+},
     });
   } catch (error) {
     console.error("GET USER ERROR:", error);
@@ -316,15 +327,21 @@ export const login = async (req, res) => {
 
     // Save Session
     req.session.user = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    };
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+};
 
     res.status(200).json({
       success: true,
       message: "Login Successful",
-      user: req.session.user,
+      user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+},
     });
 
   } catch (error) {

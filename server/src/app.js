@@ -11,6 +11,8 @@ import employeeRoutes from "./routes/employeeRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/leads", leadRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/customers", customerRoutes);
 
 app.get("/", (req, res) => {
   res.json({

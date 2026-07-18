@@ -33,6 +33,7 @@ const leadSchema = new mongoose.Schema(
         "Referral",
         "Email",
         "Manual",
+        "Instagram",
       ],
       default: "Manual",
     },

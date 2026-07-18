@@ -1,5 +1,6 @@
 import Lead from "../models/Lead.js";
 import Employee from "../models/Employee.js";
+import Customer from "../models/Customer.js";
 
 export const createLead = async (req, res) => {
   try {
@@ -32,22 +33,66 @@ export const createLead = async (req, res) => {
     }
 
     // Create Lead
-    const lead = await Lead.create({
-      name,
-      email,
-      phone,
-      company,
-      source,
-      priority,
-      notes,
-      createdBy: req.session.user.id,
-    });
+    // Auto Assign Employee
+let employee = null;
 
-    return res.status(201).json({
-      success: true,
-      message: "Lead Created Successfully",
-      lead,
-    });
+if (priority === "High") {
+  employee = await Employee.findOne({
+    createdBy: req.session.user.id,
+    department: "Sales",
+    designation: "Sales Manager",
+    status: "Active",
+  });
+}
+
+if (priority === "Medium" && !employee) {
+  employee = await Employee.findOne({
+    createdBy: req.session.user.id,
+    department: "Sales",
+    designation: "Business Development Executive",
+    status: "Active",
+  });
+}
+
+if (priority === "Low" && !employee) {
+  employee = await Employee.findOne({
+    createdBy: req.session.user.id,
+    department: "Sales",
+    designation: "Sales Executive",
+    status: "Active",
+  });
+}
+
+if (!employee) {
+  employee = await Employee.findOne({
+    createdBy: req.session.user.id,
+    department: "Sales",
+    status: "Active",
+  });
+}
+
+const lead = await Lead.create({
+  name,
+  email,
+  phone,
+  company,
+  source,
+  priority,
+  notes,
+  assignedTo: employee ? employee._id : null,
+  createdBy: req.session.user.id,
+});
+
+await lead.populate(
+  "assignedTo",
+  "name email department designation"
+);
+
+return res.status(201).json({
+  success: true,
+  message: "Lead Created Successfully",
+  lead,
+});
 
   } catch (error) {
     console.error("CREATE LEAD ERROR:", error);
@@ -60,6 +105,8 @@ export const createLead = async (req, res) => {
 };
 export const getAllLeads = async (req, res) => {
   try {
+    console.log("Logged In User:", req.session.user);
+
     const leads = await Lead.find({
       createdBy: req.session.user.id,
     }).populate(
@@ -67,9 +114,10 @@ export const getAllLeads = async (req, res) => {
       "name email department designation"
     );
 
+    console.log("Found Leads:", leads);
+
     return res.status(200).json({
       success: true,
-      count: leads.length,
       leads,
     });
 
@@ -282,6 +330,118 @@ export const updateLeadStatus = async (req, res) => {
     console.error("UPDATE STATUS ERROR:", error);
 
     return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getRecentLeads = async (req, res) => {
+  try {
+    console.log("SESSION USER:", req.session.user);
+
+    const leads = await Lead.find({})
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    console.log("LEADS:", leads);
+
+    return res.status(200).json({
+      success: true,
+      leads,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getMyLeads = async (req, res) => {
+  try {
+    console.log("SESSION:", req.session.user);
+
+    const employee = await Employee.findOne({
+      email: req.session.user.email,
+    });
+
+    console.log("EMPLOYEE:", employee);
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    const leads = await Lead.find({
+      assignedTo: employee._id,
+    }).populate(
+      "assignedTo",
+      "name email designation"
+    );
+
+    console.log("LEADS:", leads);
+
+    return res.status(200).json({
+      success: true,
+      leads,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const convertLeadToCustomer = async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead Not Found",
+      });
+    }
+
+    const existingCustomer = await Customer.findOne({
+      email: lead.email,
+    });
+
+    if (existingCustomer) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer already exists",
+      });
+    }
+
+    const customer = await Customer.create({
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      company: lead.company,
+      assignedTo: lead.assignedTo,
+      notes: lead.notes,
+      createdBy: req.session.user.id,
+      status: "Active",
+    });
+
+    lead.status = "Won";
+    await lead.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Lead Converted Successfully",
+      customer,
+    });
+
+  } catch (error) {
+    res.status(500).json({
       success: false,
       message: error.message,
     });
