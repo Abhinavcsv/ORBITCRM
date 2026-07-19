@@ -8,6 +8,7 @@ const { user } = useAuth();
     { name: "Dashboard", path: "/" },
     { name: "Employees", path: "/employees" },
     { name: "Customers", path: "/customers" },
+    { name: "Register User", path: "/register-user" },
     { name: "Leads", path: "/leads" },
     { name: "Tasks", path: "/tasks" },
     { name: "Reports", path: "/reports" },

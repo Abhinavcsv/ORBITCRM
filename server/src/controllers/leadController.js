@@ -38,11 +38,10 @@ let employee = null;
 
 if (priority === "High") {
   employee = await Employee.findOne({
-    createdBy: req.session.user.id,
-    department: "Sales",
-    designation: "Sales Manager",
-    status: "Active",
-  });
+  department: "Sales",
+  designation: "Sales Manager",
+  status: "Active",
+});
 }
 
 if (priority === "Medium" && !employee) {
@@ -107,12 +106,12 @@ export const getAllLeads = async (req, res) => {
   try {
     console.log("Logged In User:", req.session.user);
 
-    const leads = await Lead.find({
-      createdBy: req.session.user.id,
-    }).populate(
-      "assignedTo",
-      "name email department designation"
-    );
+    const leads = await Lead.find()
+  .populate(
+    "assignedTo",
+    "name email department designation"
+  )
+  .sort({ createdAt: -1 });
 
     console.log("Found Leads:", leads);
 

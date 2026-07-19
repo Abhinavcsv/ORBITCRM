@@ -1,133 +1,95 @@
 import Employee from "../models/Employee.js";
 import Lead from "../models/Lead.js";
-import mongoose from "mongoose";
+
 export const getDashboardStats = async (req, res) => {
   try {
-    const createdBy = req.session.user.id;
 
-    console.log("Session User:", req.session.user);
-    console.log("Created By:", createdBy);
-
-    const allEmployees = await Employee.find({});
-    console.log("All Employees:", allEmployees);
-
-console.log("Session User:", req.session.user);
-console.log("CreatedBy:", createdBy);
-
-const allLeads = await Lead.find({});
-console.log("All Leads:", allLeads);
-
-const userLeads = await Lead.find({ createdBy });
-console.log("User Leads:", userLeads);
-
-const totalLeads = await Lead.countDocuments({ createdBy });
-console.log("Total Leads:", totalLeads);
-
-    console.log(
-  "Employee Count:",
-  await Employee.countDocuments({})
-);
-
-    const totalEmployees = await Employee.countDocuments({
-      createdBy,
-    });
+    const totalEmployees = await Employee.countDocuments();
 
     const activeEmployees = await Employee.countDocuments({
-      createdBy,
       status: "Active",
     });
 
     const inactiveEmployees = await Employee.countDocuments({
-      createdBy,
       status: "Inactive",
     });
 
+    const totalLeads = await Lead.countDocuments();
 
     const newLeads = await Lead.countDocuments({
-      createdBy,
       status: "New",
     });
 
     const contacted = await Lead.countDocuments({
-      createdBy,
       status: "Contacted",
     });
 
     const qualified = await Lead.countDocuments({
-      createdBy,
       status: "Qualified",
     });
 
     const proposalSent = await Lead.countDocuments({
-      createdBy,
       status: "Proposal Sent",
     });
 
     const negotiation = await Lead.countDocuments({
-      createdBy,
       status: "Negotiation",
     });
 
     const won = await Lead.countDocuments({
-      createdBy,
       status: "Won",
     });
-    const monthlyEmployees = await Employee.aggregate([
-  {
-    $match: {
-      createdBy: new mongoose.Types.ObjectId(req.session.user.id),
-    },
-  },
-  {
-    $group: {
-      _id: { $month: "$createdAt" },
-      employees: { $sum: 1 },
-    },
-  },
-  {
-    $sort: {
-      _id: 1,
-    },
-  },
-]);
-
-const months = [
-  "Jan","Feb","Mar","Apr","May","Jun",
-  "Jul","Aug","Sep","Oct","Nov","Dec"
-];
-
-const employeeGrowth = months.map((month, index) => {
-  const found = monthlyEmployees.find(
-    item => item._id === index + 1
-  );
-
-  return {
-    month,
-    employees: found ? found.employees : 0,
-  };
-});
 
     const lost = await Lead.countDocuments({
-      createdBy,
       status: "Lost",
+    });
+
+    const monthlyEmployees = await Employee.aggregate([
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          employees: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    const months = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+
+    const employeeGrowth = months.map((month, index) => {
+      const found = monthlyEmployees.find(
+        item => item._id === index + 1
+      );
+
+      return {
+        month,
+        employees: found ? found.employees : 0,
+      };
     });
 
     return res.status(200).json({
       success: true,
       stats: {
-  totalEmployees,
-  activeEmployees,
-  inactiveEmployees,
-  totalLeads,
-  newLeads,
-  contacted,
-  qualified,
-  proposalSent,
-  negotiation,
-  won,
-  lost,
-  employeeGrowth,
-},
+        totalEmployees,
+        activeEmployees,
+        inactiveEmployees,
+        totalLeads,
+        newLeads,
+        contacted,
+        qualified,
+        proposalSent,
+        negotiation,
+        won,
+        lost,
+        employeeGrowth,
+      },
     });
 
   } catch (error) {

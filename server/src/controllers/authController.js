@@ -12,6 +12,12 @@ export const register = async (req, res) => {
   password,
   role,
 } = req.body;
+if (!req.session.user || req.session.user.role !== "admin") {
+  return res.status(403).json({
+    success: false,
+    message: "Only Admin can create users",
+  });
+}
 
     // Validation
     if (!name || !email || !password) {

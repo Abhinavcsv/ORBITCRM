@@ -3,9 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
-
-import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 import NotFound from "../pages/NotFound";
 import Employees from "../pages/employees/Employees";
@@ -55,16 +54,6 @@ function AppRoutes() {
   }
 />
 
-
-        <Route
-          path="/register"
-          element={
-            <AuthLayout>
-              <Register />
-            </AuthLayout>
-          }
-        />
-
         <Route
           path="/"
           element={
@@ -81,6 +70,16 @@ function AppRoutes() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <MainLayout>
         <Employees />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/register-user"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Register />
       </MainLayout>
     </ProtectedRoute>
   }

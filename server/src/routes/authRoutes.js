@@ -13,7 +13,7 @@ import { isAuthenticated } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/register", isAuthenticated, register);
 router.post("/login", login);
 router.post("/reset-password", resetPassword);
 router.post("/verify-otp", verifyOTP);

@@ -5,7 +5,7 @@ export const createCustomer = async (req, res) => {
   try {
     const customer = await Customer.create({
       ...req.body,
-      createdBy: req.session.user.id,
+      createdBy: req.session.user.id, // Audit purpose
     });
 
     res.status(201).json({
@@ -24,9 +24,7 @@ export const createCustomer = async (req, res) => {
 // Get All Customers
 export const getCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find({
-      createdBy: req.session.user.id,
-    })
+    const customers = await Customer.find()
       .populate("assignedTo", "name email")
       .sort({ createdAt: -1 });
 
@@ -70,11 +68,8 @@ export const getCustomerById = async (req, res) => {
 // Update Customer
 export const updateCustomer = async (req, res) => {
   try {
-    const customer = await Customer.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        createdBy: req.session.user.id,
-      },
+    const customer = await Customer.findByIdAndUpdate(
+      req.params.id,
       req.body,
       {
         new: true,
@@ -105,10 +100,7 @@ export const updateCustomer = async (req, res) => {
 // Delete Customer
 export const deleteCustomer = async (req, res) => {
   try {
-    const customer = await Customer.findOneAndDelete({
-      _id: req.params.id,
-      createdBy: req.session.user.id,
-    });
+    const customer = await Customer.findByIdAndDelete(req.params.id);
 
     if (!customer) {
       return res.status(404).json({
