@@ -3,24 +3,42 @@ dotenv.config();
 
 import nodemailer from "nodemailer";
 
-console.log("EMAIL_USER =", process.env.EMAIL_USER);
-console.log("EMAIL_PASS =", process.env.EMAIL_PASS);
-
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
+// Verify SMTP connection on server startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Error:", error);
+  } else {
+    console.log("✅ SMTP Server is Ready");
+  }
+});
+
 const sendEmail = async (to, subject, html) => {
-  await transporter.sendMail({
-    from: `"OrbitCRM Team" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    console.log("📧 Sending email to:", to);
+
+    const info = await transporter.sendMail({
+      from: `"OrbitCRM Team" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+
+    console.log("✅ Email Sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("❌ Email Send Error:", error);
+    throw error;
+  }
 };
 
 export default sendEmail;
