@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@getbrevo/brevo": "^6.0.2",
+    "nodemailer": "^9.0.3",
     "recharts": "^3.9.2"
   }
 }
