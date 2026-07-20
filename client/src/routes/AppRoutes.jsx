@@ -16,6 +16,8 @@ import MyLeads from "../pages/leads/MyLeads";
 import Tasks from "../pages/tasks/Tasks";
 import MyTasks from "../pages/tasks/MyTasks";
 import Customers from "../pages/customers/Customers";
+import Reports from "../pages/reports/Reports";
+import Settings from "../pages/settings/Settings";
 
 function AppRoutes() {
   return (
@@ -130,6 +132,26 @@ function AppRoutes() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <MainLayout>
         <Customers />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/reports"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Reports />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/settings"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <MainLayout>
+        <Settings />
       </MainLayout>
     </ProtectedRoute>
   }
