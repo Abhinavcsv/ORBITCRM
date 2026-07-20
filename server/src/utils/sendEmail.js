@@ -1,34 +1,37 @@
 import dotenv from "dotenv";
-import nodemailer from "nodemailer";
-
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+import Brevo from "@getbrevo/brevo";
+
+const apiInstance = new Brevo.TransactionalEmailsApi();
+
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
 const sendEmail = async (to, subject, html) => {
   try {
-    await transporter.verify();
-    console.log("✅ SMTP Connected");
+    const email = new Brevo.SendSmtpEmail();
 
-    const info = await transporter.sendMail({
-      from: `"OrbitCRM" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
+    email.sender = {
+      name: process.env.SENDER_NAME || "OrbitCRM",
+      email: process.env.SENDER_EMAIL,
+    };
 
-    console.log("✅ Mail Sent:", info.messageId);
-    return info;
+    email.to = [{ email: to }];
+    email.subject = subject;
+    email.htmlContent = html;
+
+    const response = await apiInstance.sendTransacEmail(email);
+
+    console.log("✅ Mail Sent:", response);
+    return response;
   } catch (err) {
-    console.error("❌ Mail Error:", err);
+    console.error(
+      "❌ Mail Error:",
+      err.response?.body || err.message || err
+    );
     throw err;
   }
 };
