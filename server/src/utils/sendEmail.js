@@ -1,18 +1,22 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import Brevo from "@getbrevo/brevo";
+import {
+  TransactionalEmailsApi,
+  TransactionalEmailsApiApiKeys,
+  SendSmtpEmail,
+} from "@getbrevo/brevo";
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
+const apiInstance = new TransactionalEmailsApi();
 
 apiInstance.setApiKey(
-  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  TransactionalEmailsApiApiKeys.apiKey,
   process.env.BREVO_API_KEY
 );
 
 const sendEmail = async (to, subject, html) => {
   try {
-    const email = new Brevo.SendSmtpEmail();
+    const email = new SendSmtpEmail();
 
     email.sender = {
       name: process.env.SENDER_NAME || "OrbitCRM",
@@ -28,10 +32,7 @@ const sendEmail = async (to, subject, html) => {
     console.log("✅ Mail Sent:", response);
     return response;
   } catch (err) {
-    console.error(
-      "❌ Mail Error:",
-      err.response?.body || err.message || err
-    );
+    console.error("❌ Mail Error:", err);
     throw err;
   }
 };
