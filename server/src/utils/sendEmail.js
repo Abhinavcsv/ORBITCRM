@@ -3,6 +3,11 @@ dotenv.config();
 
 const sendEmail = async (to, subject, html) => {
   try {
+    console.log("========== BREVO DEBUG ==========");
+    console.log("To:", to);
+    console.log("Sender:", process.env.SENDER_EMAIL);
+    console.log("API Key Exists:", !!process.env.BREVO_API_KEY);
+
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -14,11 +19,7 @@ const sendEmail = async (to, subject, html) => {
           name: process.env.SENDER_NAME,
           email: process.env.SENDER_EMAIL,
         },
-        to: [
-          {
-            email: to,
-          },
-        ],
+        to: [{ email: to }],
         subject,
         htmlContent: html,
       }),
@@ -26,14 +27,16 @@ const sendEmail = async (to, subject, html) => {
 
     const data = await response.json();
 
+    console.log("Brevo Status:", response.status);
+    console.log("Brevo Response:", data);
+
     if (!response.ok) {
       throw new Error(JSON.stringify(data));
     }
 
-    console.log("✅ Mail Sent:", data);
     return data;
   } catch (err) {
-    console.error("❌ Mail Error:", err);
+    console.error(err);
     throw err;
   }
 };
