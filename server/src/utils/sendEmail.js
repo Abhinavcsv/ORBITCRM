@@ -1,29 +1,31 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Initialize Resend with your API Key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, html) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"OrbitCRM" <${process.env.EMAIL_USER}>`,
-      to,
+    const { data, error } = await resend.emails.send({
+      // IMPORTANT: Use 'onboarding@resend.dev' for free tier testing.
+      // Once you add a custom domain, change it to: "OrbitCRM <your-email@yourdomain.com>"
+      from: "OrbitCRM <onboarding@resend.dev>",
+      to: [to], // Resend expects an array or a comma-separated string
       subject,
       html,
     });
 
-    console.log("✅ Email Sent:", info.messageId);
-    return info;
+    if (error) {
+      console.error("❌ Resend API Error:", error);
+      throw error;
+    }
+
+    console.log("✅ Email Sent:", data.id);
+    return data;
   } catch (err) {
-    console.error("❌ Email Error:", err);
+    console.error("❌ Email System Error:", err);
     throw err;
   }
 };
