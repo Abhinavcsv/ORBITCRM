@@ -5,24 +5,22 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 
 const sessionMiddleware = session({
-  secret: process.env.JWT_SECRET,
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
 
-  resave: false,
-  saveUninitialized: false,
+    proxy: true,
 
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-  }),
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+    }),
 
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite:
-      process.env.NODE_ENV === "production"
-        ? "none"
-        : "lax",
-  },
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24,
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+    },
 });
 
 export default sessionMiddleware;
