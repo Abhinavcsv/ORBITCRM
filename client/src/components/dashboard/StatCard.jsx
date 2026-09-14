@@ -1,24 +1,20 @@
 function StatCard({ title, value, icon, color }) {
   const colors = {
     blue: {
-      border: "border-blue-500",
-      bg: "bg-blue-100",
-      text: "text-blue-600",
+      bg: "from-cyan-500 to-blue-600",
+      glow: "shadow-cyan-500/20",
     },
     green: {
-      border: "border-green-500",
-      bg: "bg-green-100",
-      text: "text-green-600",
+      bg: "from-emerald-500 to-green-600",
+      glow: "shadow-green-500/20",
     },
     yellow: {
-      border: "border-yellow-500",
-      bg: "bg-yellow-100",
-      text: "text-yellow-600",
+      bg: "from-amber-400 to-yellow-600",
+      glow: "shadow-yellow-500/20",
     },
     red: {
-      border: "border-red-500",
-      bg: "bg-red-100",
-      text: "text-red-600",
+      bg: "from-rose-500 to-red-600",
+      glow: "shadow-red-500/20",
     },
   };
 
@@ -26,22 +22,34 @@ function StatCard({ title, value, icon, color }) {
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border-l-4 ${theme.border} hover:-translate-y-1`}
+      className={`relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-xl ${theme.glow} hover:shadow-2xl hover:-translate-y-2 hover:border-cyan-500 transition-all duration-300`}
     >
-      <div className="flex items-center justify-between">
+      {/* Glow */}
+
+      <div
+        className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-20 bg-gradient-to-br ${theme.bg}`}
+      ></div>
+
+      <div className="relative z-10 flex items-center justify-between">
 
         <div>
-          <p className="text-gray-500 text-sm font-medium">
+
+          <p className="text-slate-400 text-sm font-medium uppercase tracking-wide">
             {title}
           </p>
 
-          <h2 className="text-4xl font-bold mt-3 text-slate-800">
+          <h2 className="text-5xl font-bold text-white mt-4">
             {value}
           </h2>
+
+          <p className="text-emerald-400 text-sm mt-3">
+            ▲ Live Statistics
+          </p>
+
         </div>
 
         <div
-          className={`w-14 h-14 rounded-xl flex items-center justify-center ${theme.bg} ${theme.text}`}
+          className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${theme.bg} flex items-center justify-center text-white text-2xl shadow-lg`}
         >
           {icon}
         </div>

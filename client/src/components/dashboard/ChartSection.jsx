@@ -43,8 +43,9 @@ function ChartSection() {
       {
         label: "Employees",
         data: chartData.map((item) => item.employees),
-        backgroundColor: "#2563eb",
-        borderRadius: 8,
+        backgroundColor: "#06b6d4",
+        hoverBackgroundColor: "#22d3ee",
+        borderRadius: 12,
       },
     ],
   };
@@ -52,25 +53,69 @@ function ChartSection() {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+
     plugins: {
       legend: {
-        display: true,
+        labels: {
+          color: "#e2e8f0",
+          font: {
+            size: 14,
+            weight: "bold",
+          },
+        },
       },
-      title: {
-        display: false,
+
+      tooltip: {
+        backgroundColor: "#0f172a",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+      },
+    },
+
+    scales: {
+      x: {
+        ticks: {
+          color: "#94a3b8",
+        },
+
+        grid: {
+          color: "#1e293b",
+        },
+      },
+
+      y: {
+        ticks: {
+          color: "#94a3b8",
+        },
+
+        grid: {
+          color: "#1e293b",
+        },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-6">
-      <h2 className="text-xl font-bold mb-6">
-        Employee Growth
-      </h2>
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-6 hover:border-cyan-500 transition-all duration-300">
 
-      <div className="h-80">
+      <div className="flex items-center justify-between mb-6">
+
+        <div>
+          <h2 className="text-2xl font-bold text-white">
+            📈 Employee Growth
+          </h2>
+
+          <p className="text-slate-400 text-sm mt-1">
+            Monthly employee growth overview
+          </p>
+        </div>
+
+      </div>
+
+      <div className="h-96">
         <Bar data={data} options={options} />
       </div>
+
     </div>
   );
 }
