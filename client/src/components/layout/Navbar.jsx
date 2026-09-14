@@ -1,10 +1,8 @@
 import { Bell, Moon, Sun } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 
 function Navbar() {
   const { user } = useAuth();
-  const { dark, toggleTheme } = useTheme();
 
   return (
     <nav className="h-20 bg-[#020617] border-b border-slate-800 px-8 flex items-center justify-between">
