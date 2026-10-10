@@ -3,7 +3,7 @@ function Settings() {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
 
-      <div className="bg-white rounded-xl shadow p-6 space-y-5">
+      <div className="bg-white text-gray-900 rounded-xl shadow p-6 space-y-5">
 
         <div>
           <label className="font-semibold">
@@ -11,7 +11,7 @@ function Settings() {
           </label>
 
           <input
-            className="w-full border rounded-lg p-2 mt-2"
+            className="w-full border rounded-lg p-2 mt-2 text-gray-900"
             placeholder="OrbitCRM"
           />
         </div>
@@ -22,7 +22,7 @@ function Settings() {
           </label>
 
           <input
-            className="w-full border rounded-lg p-2 mt-2"
+            className="w-full border rounded-lg p-2 mt-2 text-gray-900"
             placeholder="support@orbitcrm.com"
           />
         </div>

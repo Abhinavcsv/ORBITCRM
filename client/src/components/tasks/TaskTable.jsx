@@ -1,4 +1,5 @@
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 function TaskTable({
   tasks,
@@ -6,9 +7,13 @@ function TaskTable({
   onEdit,
   onDelete,
 }) {
+  const { user } = useAuth();
+
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
-      <table className="w-full">
+      <table className="w-full text-gray-900">
         <thead className="bg-slate-100">
           <tr>
             <th className="p-4 text-left">Title</th>
@@ -53,30 +58,38 @@ function TaskTable({
                 <td className="p-4">
                   <div className="flex justify-center gap-4">
 
+                    {/* View - available to everyone */}
                     <button
                       onClick={() => onView && onView(task)}
                       className="text-blue-600"
+                      title="View Task"
                     >
                       <FaEye />
                     </button>
 
-                    <button
-                      onClick={() => onEdit && onEdit(task)}
-                      className="text-yellow-500"
-                    >
-                      <FaEdit />
-                    </button>
+                    {/* Admin-only actions */}
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => onEdit && onEdit(task)}
+                          className="text-yellow-500"
+                          title="Edit Task"
+                        >
+                          <FaEdit />
+                        </button>
 
-                    <button
-                      onClick={() => onDelete && onDelete(task)}
-                      className="text-red-600"
-                    >
-                      <FaTrash />
-                    </button>
+                        <button
+                          onClick={() => onDelete && onDelete(task)}
+                          className="text-red-600"
+                          title="Delete Task"
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
 
                   </div>
                 </td>
-
               </tr>
             ))
           )}

@@ -4,6 +4,7 @@ import {
   FaTrash,
   FaExchangeAlt,
 } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 function LeadTable({
   leads,
@@ -12,9 +13,13 @@ function LeadTable({
   onEdit,
   onConvert,
 }) {
+  const { user } = useAuth();
+
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
-      <table className="w-full">
+      <table className="w-full text-gray-900">
         <thead className="bg-slate-100">
           <tr>
             <th className="p-4 text-left">Name</th>
@@ -59,38 +64,45 @@ function LeadTable({
 
                 <td className="p-4">
                   <div className="flex justify-center gap-4">
-
+                    {/* View - available to everyone */}
                     <button
                       onClick={() => onView && onView(lead)}
                       className="text-blue-600"
+                      title="View Lead"
                     >
                       <FaEye />
                     </button>
 
-                    <button
-                      onClick={() => onEdit && onEdit(lead)}
-                      className="text-yellow-500"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-  onClick={() => onConvert(lead)}
-  className="text-green-600"
-  title="Convert to Customer"
->
-  <FaExchangeAlt />
-</button>
+                    {/* Admin-only actions */}
+                    {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => onEdit && onEdit(lead)}
+                          className="text-yellow-500"
+                          title="Edit Lead"
+                        >
+                          <FaEdit />
+                        </button>
 
-                    <button
-                      onClick={() => onDelete(lead)}
-                      className="text-red-600"
-                    >
-                      <FaTrash />
-                    </button>
+                        <button
+                          onClick={() => onConvert && onConvert(lead)}
+                          className="text-green-600"
+                          title="Convert to Customer"
+                        >
+                          <FaExchangeAlt />
+                        </button>
 
+                        <button
+                          onClick={() => onDelete && onDelete(lead)}
+                          className="text-red-600"
+                          title="Delete Lead"
+                        >
+                          <FaTrash />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
-
               </tr>
             ))
           )}

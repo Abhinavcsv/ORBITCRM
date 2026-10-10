@@ -24,7 +24,7 @@ function DeleteCustomerModal({
 
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-lg border hover:bg-gray-100"
+            className="px-5 py-2 rounded-lg border text-gray-900 hover:bg-gray-100"
           >
             Cancel
           </button>

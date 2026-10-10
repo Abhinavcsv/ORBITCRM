@@ -9,7 +9,7 @@ function CustomerTable({
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
 
-      <table className="w-full">
+      <table className="w-full text-gray-900">
 
         <thead className="bg-slate-100">
           <tr>

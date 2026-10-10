@@ -12,7 +12,6 @@ function Sidebar() {
     { icon: "📈", name: "Leads", path: "/leads" },
     { icon: "✅", name: "Tasks", path: "/tasks" },
     { icon: "📊", name: "Reports", path: "/reports" },
-    { icon: "🤖", name: "AI Assistant", path: "/ai-assistant" },
     { icon: "⚙️", name: "Settings", path: "/settings" },
   ];
 

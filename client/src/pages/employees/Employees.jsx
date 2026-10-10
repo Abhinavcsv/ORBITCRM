@@ -1,181 +1,263 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import EmployeeTable from "../../components/employees/EmployeeTable";
-import AddEmployeeModal from "../../components/employees/AddEmployeeModal";
-import DeleteEmployeeModal from "../../components/employees/DeleteEmployeeModal";
-import EmployeeSearch from "../../components/employees/EmployeeSearch";
-import DepartmentFilter from "../../components/employees/DepartmentFilter";
-import ViewEmployeeModal from "../../components/employees/ViewEmployeeModal";
-import EditEmployeeModal from "../../components/employees/EditEmployeeModal";
-
-import {
-  getEmployees,
-  deleteEmployee,
-} from "../../services/employeeService";
+import { getAllUsers } from "../../services/authService";
+import { getEmployees } from "../../services/employeeService";
 
 function Employees() {
+  const [users, setUsers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-
+  const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState("");
 
   useEffect(() => {
-    fetchEmployees();
+    fetchUsers();
   }, []);
 
-  const fetchEmployees = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
 
-      const data = await getEmployees();
+      const [usersResponse, employeesResponse] =
+        await Promise.all([
+          getAllUsers(),
+          getEmployees(),
+        ]);
 
-      setEmployees(data.employees);
+      setUsers(usersResponse.users || []);
+      setEmployees(employeesResponse.employees || []);
     } catch (error) {
-      console.error("Employee Fetch Error:", error);
-      toast.error("Failed to fetch employees");
+      console.error("User Management Error:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to fetch users"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteClick = (employee) => {
-    setSelectedEmployee(employee);
-    setIsDeleteOpen(true);
-  };
-  const handleViewClick = (employee) => {
-  setSelectedEmployee(employee);
-  setIsViewOpen(true);
-};
-const handleEditClick = (employee) => {
-  setSelectedEmployee(employee);
-  setIsEditOpen(true);
-};
-
-  const handleDelete = async () => {
-    try {
-      await deleteEmployee(selectedEmployee._id);
-
-      toast.success("Employee Deleted Successfully");
-
-      setIsDeleteOpen(false);
-      setSelectedEmployee(null);
-
-      fetchEmployees();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Delete Failed"
-      );
-    }
+  const getEmployeeDetails = (user) => {
+    return employees.find(
+      (employee) =>
+        employee.userId === user._id ||
+        employee.userId?._id === user._id
+    );
   };
 
-  // Live Search
-  const filteredEmployees = employees.filter((emp) => {
-  const matchesSearch =
-    emp.name.toLowerCase().includes(search.toLowerCase()) ||
-    emp.email.toLowerCase().includes(search.toLowerCase()) ||
-    emp.department.toLowerCase().includes(search.toLowerCase());
+  const filteredUsers = users.filter((user) => {
+    const matchesRole =
+      filter === "all" ||
+      user.role === filter;
 
-  const matchesDepartment =
-    department === "" ||
-    emp.department.trim().toLowerCase() ===
-      department.trim().toLowerCase();
+    const searchText = search.toLowerCase();
 
-  return matchesSearch && matchesDepartment;
-});
+    const matchesSearch =
+      user.name
+        ?.toLowerCase()
+        .includes(searchText) ||
+      user.email
+        ?.toLowerCase()
+        .includes(searchText);
+
+    return matchesRole && matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-
+      <div>
         <h1 className="text-3xl font-bold text-slate-800">
-          Employees
+          User Management
         </h1>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-        >
-          + Add Employee
-        </button>
+        <p className="text-slate-500 mt-2">
+          Manage all Admin and Employee accounts.
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-md p-5">
+
+        <div className="flex flex-col md:flex-row gap-4">
+
+          {/* Role Filter */}
+          <select
+            value={filter}
+            onChange={(e) =>
+              setFilter(e.target.value)
+            }
+            className="border rounded-lg p-3 text-gray-900 md:w-64"
+          >
+            <option value="all">
+              All Users
+            </option>
+
+            <option value="admin">
+              Admin
+            </option>
+
+            <option value="employee">
+              Employees
+            </option>
+          </select>
+
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="border rounded-lg p-3 text-gray-900 flex-1"
+          />
+
+        </div>
 
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-
-  <EmployeeSearch
-    search={search}
-    setSearch={setSearch}
-  />
-
-  <DepartmentFilter
-    department={department}
-    setDepartment={setDepartment}
-  />
-
-</div>
-
-      {/* Employee Table */}
+      {/* User Table */}
       {loading ? (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          Loading Employees...
+        <div className="bg-white rounded-xl shadow-md p-6 text-gray-600">
+          Loading Users...
         </div>
       ) : (
-        <EmployeeTable
-  employees={filteredEmployees}
-  onDelete={handleDeleteClick}
-  onView={handleViewClick}
-  onEdit={handleEditClick}
-/>
+        <div className="bg-white rounded-xl shadow-md overflow-x-auto">
+
+          <table className="w-full text-gray-900">
+
+            <thead className="bg-slate-100">
+              <tr>
+
+                <th className="p-4 text-left">
+                  Name
+                </th>
+
+                <th className="p-4 text-left">
+                  Email
+                </th>
+
+                <th className="p-4 text-left">
+                  Role
+                </th>
+
+                {filter !== "admin" && (
+                  <>
+                    <th className="p-4 text-left">
+                      Phone
+                    </th>
+
+                    <th className="p-4 text-left">
+                      Department
+                    </th>
+
+                    <th className="p-4 text-left">
+                      Designation
+                    </th>
+
+                    <th className="p-4 text-left">
+                      Salary
+                    </th>
+                  </>
+                )}
+
+                <th className="p-4 text-left">
+                  Status
+                </th>
+
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={filter === "admin" ? 4 : 8}
+                    className="text-center p-8 text-gray-500"
+                  >
+                    No Users Found
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => {
+                  const employee =
+                    user.role === "employee"
+                      ? getEmployeeDetails(user)
+                      : null;
+
+                  return (
+                    <tr
+                      key={user._id}
+                      className="border-t hover:bg-gray-50 transition"
+                    >
+
+                      <td className="p-4 font-medium">
+                        {user.name}
+                      </td>
+
+                      <td className="p-4">
+                        {user.email}
+                      </td>
+
+                      <td className="p-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            user.role === "admin"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {user.role === "admin"
+                            ? "Admin"
+                            : "Employee"}
+                        </span>
+                      </td>
+
+                      {filter !== "admin" && (
+                        <>
+                          <td className="p-4">
+                            {employee?.phone || "-"}
+                          </td>
+
+                          <td className="p-4">
+                            {employee?.department || "-"}
+                          </td>
+
+                          <td className="p-4">
+                            {employee?.designation || "-"}
+                          </td>
+
+                          <td className="p-4">
+                            {employee?.salary
+                              ? `₹ ${employee.salary}`
+                              : "-"}
+                          </td>
+                        </>
+                      )}
+
+                      <td className="p-4">
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                          Active
+                        </span>
+                      </td>
+
+                    </tr>
+                  );
+                })
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
       )}
-
-      {/* Add Employee Modal */}
-      <AddEmployeeModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchEmployees}
-      />
-      <ViewEmployeeModal
-  isOpen={isViewOpen}
-  employee={selectedEmployee}
-  onClose={() => {
-    setIsViewOpen(false);
-    setSelectedEmployee(null);
-  }}
-/>
-
-      {/* Delete Employee Modal */}
-      <DeleteEmployeeModal
-        isOpen={isDeleteOpen}
-        onClose={() => {
-          setIsDeleteOpen(false);
-          setSelectedEmployee(null);
-        }}
-        onConfirm={handleDelete}
-      />
-      <EditEmployeeModal
-  isOpen={isEditOpen}
-  employee={selectedEmployee}
-  onClose={() => {
-    setIsEditOpen(false);
-    setSelectedEmployee(null);
-  }}
-  onSuccess={() => {
-    fetchEmployees();
-    setIsEditOpen(false);
-    setSelectedEmployee(null);
-  }}
-/>
 
     </div>
   );
