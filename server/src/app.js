@@ -1,3 +1,4 @@
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -16,26 +17,31 @@ import customerRoutes from "./routes/customerRoutes.js";
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://orbitcrm-psi.vercel.app",
-  ],
-  credentials: true,
-}));
+// CORS configuration
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://orbitcrm-psi.vercel.app",
+      "https://orbit-qu17felaj-temporary69sixtynine-2811s-projects.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
+// General middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ✅ Session BEFORE routes
+// Session middleware
 app.use(sessionMiddleware);
 
+// Security and logging middleware
 app.use(helmet());
 app.use(morgan("dev"));
 
-// ✅ Routes AFTER session
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/test", testRoutes);
@@ -44,10 +50,11 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/customers", customerRoutes);
 
+// Health check
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "🚀 OrbitCRM Backend is Running Successfully!",
+    message: "OrbitCRM Backend is Running Successfully!",
   });
 });
 
